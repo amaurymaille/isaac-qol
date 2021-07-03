@@ -6,53 +6,7 @@ _G["qol"] = mod
 local json = require ("json")
 
 include ("qol_config.lua")
-
--- Utility functions
-
-mod.Utils = {}
-mod.Utils.Data = {}
-mod.Utils.Data.ForgetMeNow = "forget"
-
-function mod.Utils.FindBossRoomIndex()
-    local rooms = Game():GetLevel():GetRooms()
-    
-    for i = 0, #rooms do
-        local room = rooms:Get(i)
-        if room.Data.Type == RoomType.ROOM_BOSS then
-            return room.GridIndex
-        end
-    end
-    
-    return nil
-end
-
-function mod.Utils.GetCurrentRoom()
-    return Game():GetLevel():GetCurrentRoom()
-end
-
-function mod.Utils.GetCurrentRoomIndex()
-    return Game():GetLevel():GetCurrentRoomIndex()
-end
-
-function mod.Utils.GetCurrentRoomDesc()
-    return Game():GetLevel():GetCurrentRoomDesc()
-end
-
-function mod.Utils.GetCurrentRoomType()
-    return mod.Utils.GetCurrentRoomDesc().Data.Type
-end
-
-function mod.Utils:ForgetMeNow(cmd)
-    if cmd == mod.Utils.Data.ForgetMeNow then
-        Game():GetPlayer(1):UseActiveItem(CollectibleType.COLLECTIBLE_FORGET_ME_NOW)
-    end
-end
-
-function mod.Utils.IsRoom(roomType)
-    return mod.Utils.GetCurrentRoomType() == roomType
-end
-
-mod:AddCallback(ModCallbacks.MC_EXECUTE_CMD, mod.Utils.ForgetMeNow)
+include ("qol_utilities.lua")
 
 -- Fix IV - The Emperor? not spawning a door after defeating bonus Mom
 
