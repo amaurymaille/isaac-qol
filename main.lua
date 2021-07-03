@@ -246,16 +246,6 @@ function mod.ReverseMoon:OnUpdate()
             
             table.insert(allDoors, entity:ToDoor())
         end
-        
-        --[[ if not entity then
-            print ("No entity at index " .. tostring(slot))
-        elseif entity:GetType() ~= GridEntityType.GRID_DOOR then
-            print ("Entity at index " .. tostring(slot) .. " is not a door: " .. tostring(entity:GetType()))
-        elseif not entity:ToDoor():IsOpen() then
-            print ("Entity at index " .. tostring(slot) .. " is a closed door")
-            local door = entity:ToDoor()
-            print (tostring(door.Busted) .. ", " .. tostring(door.State))
-        end --]]
     end
     
     -- print ("There are " .. tostring(#openDoors) .. " open doors in this room")
