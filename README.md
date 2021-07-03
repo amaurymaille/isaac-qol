@@ -18,36 +18,43 @@ forcibly opens a door out of the (Super) Secret Room.
 
 # Planned work
 
-* When playing as Tainted Jacob, getting hit by Dark Esau gives the player a 
+- [] When playing as Tainted Jacob, getting hit by Dark Esau gives the player a 
 Book of Shadows effect for a few seconds, in order for the player to find where
 Tainted Jacob is and avoid instant death.
-* When playing as Tainted Jacob, Dark Esau cannot be damaged until the floor's
+- [] When playing as Tainted Jacob, Dark Esau cannot be damaged until the floor's
 boss has been defeated (Nightmare Wave beaten in Greed(ier) mode) or until 
 Tainted Jacob has been turned into The Lost.
-* In Greed(ier) mode, prevent the Light White and Pulsating Red champions from 
+- [] In Greed(ier) mode, prevent the Light White and Pulsating Red champions from 
 appearing simultaneously as this can lead to unwinnable situations.
-* If the player reaches The Chest / Dark Room with only half the key to open the
+- [] If the player reaches The Chest / Dark Room with only half the key to open the
 door to Mega Satan, and can still access an Angel Room, spawn a ladder that leads
 the player to an extra room where they can fight an angel for the second key 
 piece.
-* Prevent the player from crashing / killing themselves because of other bugs.
+- [] Prevent the player from crashing / killing themselves because of other bugs.
 This includes, and is not limited to:
-	* Preventing the player from using Joker in the mirrored version of 
+	- [] Preventing the player from using Joker in the mirrored version of 
 Downpour / Dross II
-	* Preventing the player from using Dull Razor in the mirrored version
+	- [] Preventing the player from using Dull Razor in the mirrored version
 of Downpour / Dross II
-	* Preventing the player from using 0 - The Fool? when all their red
+	- [] Preventing the player from using 0 - The Fool? when all their red
 hearts are empty
-* Fix some of Delirium's unavoidable attacks, such as instant damage when it 
+- [] Fix some of Delirium's unavoidable attacks, such as instant damage when it 
 morphs into Mom's Foot.
-* Add a visual indication around Tainted Eve's hearts to indicate how much health
+- [] Add a visual indication around Tainted Eve's hearts to indicate how much health
 will get refilled when using Sumptorium.
-* Prevent both Tainted Eve and Tainted Magdalene from receiving Curse of the 
+- [] Prevent both Tainted Eve and Tainted Magdalene from receiving Curse of the 
 Unknown as both characters rely heavily on knowing how much health they have.
-* Curse of the Lost no longer appears in The Void.
-* Defeating Hush guarantees a portal to The Void on the next end boss fought 
+- [] Curse of the Lost no longer appears in The Void.
+- [] Defeating Hush guarantees a portal to The Void on the next end boss fought 
 (??? / The Lamb / Mega Satan (this one is going to be tricky))
-* Trapdoors should lead to special areas where the player can chose to branch
+- [] Trapdoors should lead to special areas where the player can chose to branch
 towards the alternate path, in case they were sent to an error room. This is 
 complicated because the secret exit room is only generated once the boss of
 the floor is defeated.
+- [] The player should not receive Curse of the Lost or Curse of the Maze during 
+the "Cursed" challenge.
+- [] Prevent Curse of the Lost and Curse of the Maze from stacking with each other.
+- [] Attempt to rework Greed(ier) mode to make it a bit more interesting (long term)
+- [] Attempt to fix as many bugs as possible on Delirium, or even rewrite the entire
+fight (long term)
+- [] Attempt to change the way The Void generates (long term)
