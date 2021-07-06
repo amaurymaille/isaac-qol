@@ -5,6 +5,7 @@ _G["qol"] = mod
 
 local json = require ("json")
 
+include ("qol_api.lua")
 include ("qol_config.lua")
 include ("qol_utilities.lua")
 
@@ -13,15 +14,15 @@ include ("qol_utilities.lua")
 mod.ReverseEmperor = {}
 mod.ReverseEmperor.Data = {}
 mod.ReverseEmperor.Data.DoorGridSlot = 7
-mod.ReverseEmperor.Data.DistanceSquared = 32
+mod.ReverseEmperor.Data.DistanceSquared = 125
 mod.ReverseEmperor.Data.Filename = "gfx/grid/door_10_bossroomdoor.anm2"
 
 function mod.ReverseEmperor.CheckCorrectLevel()
-    return Game():GetLevel():GetStage() == LevelStage.STAGE2_2
+    return qol.Level():GetStage() == LevelStage.STAGE2_2
 end
 
 function mod.ReverseEmperor.CheckCorrectRoom()
-    return Game():GetLevel():GetCurrentRoomIndex() == GridRooms.ROOM_EXTRA_BOSS_IDX
+    return qol.Level():GetCurrentRoomIndex() == GridRooms.ROOM_EXTRA_BOSS_IDX
 end
 
 function mod.ReverseEmperor.CheckConditions()
@@ -30,7 +31,8 @@ end
 
 function mod.ReverseEmperor.SpawnExitDoorForExtraMomFightFn(withAnimation)
     local slot = mod.ReverseEmperor.Data.DoorGridSlot
-    local door = room:GetGridEntity(slot)
+    local room = qol.Room()
+    local door = qol.GridEntity(slot)
     
     local sprite = door:GetSprite()
     sprite:Load(mod.ReverseEmperor.Data.Filename, true)
@@ -48,7 +50,7 @@ function mod.ReverseEmperor.SpawnExitDoorForExtraMomFightFn(withAnimation)
     
     -- Make the player appear at the bottom of the previous room because we are existing 
     -- from the upper door of the boss room.
-    Game():GetLevel().LeaveDoor = DoorSlot.UP0
+    qol.Level().LeaveDoor = DoorSlot.UP0
 end
 
 -- This function is used both to force the collision class of the grid entity 
@@ -58,11 +60,11 @@ function mod.ReverseEmperor:ForceExitDoorForExtraMomFight()
         return
     end
     
-    if not Game():GetLevel():GetCurrentRoomDesc().Clear then
+    if not qol.RoomDesc().Clear then
         return
     end
     
-    local entity = Game():GetLevel():GetCurrentRoom():GetGridEntity(mod.ReverseEmperor.Data.DoorGridSlot)
+    local entity = qol.GridEntity(mod.ReverseEmperor.Data.DoorGridSlot)
     if entity.CollisionClass ~= GridCollisionClass.COLLISION_WALL_EXCEPT_PLAYER then
         entity.CollisionClass = GridCollisionClass.COLLISION_WALL_EXCEPT_PLAYER
     end
@@ -76,9 +78,10 @@ function mod.ReverseEmperor:ForceExitDoorForExtraMomFight()
     end
     
     for i = 1, Game():GetNumPlayers() do
-        local player = Game():GetPlayer(i)
-        if entity.Position:DistanceSquared(player.Position) < mod.ReverseEmperor.Data.DistanceSquared then
-            Game():StartRoomTransition(Game():GetLevel():GetPreviousRoomIndex(), Direction.UP)
+        local player = qol.Player(i)
+        local distance = entity.Position:DistanceSquared(player.Position)
+        if distance < mod.ReverseEmperor.Data.DistanceSquared then
+            Game():StartRoomTransition(qol.Level():GetPreviousRoomIndex(), Direction.UP)
             return 
         end
     end
@@ -92,7 +95,7 @@ function mod.ReverseEmperor:SpawnExitDoorForExtraMomFight(entity)
     
     -- MC_POST_NEW_ROOM
     if not entity then
-        if Game():GetLevel():GetCurrentRoomDesc().Clear then
+        if qol.RoomDesc().Clear then
             -- print ("Entering the extra boss room (cleared)")
             mod.ReverseEmperor.SpawnExitDoorForExtraMomFightFn(false)
         else
@@ -199,19 +202,8 @@ end
 
 mod.ReverseMoon = {}
 mod.ReverseMoon.Data = {}
-mod.ReverseMoon.Data.Rooms = {}
 mod.ReverseMoon.Data.EnterSecretRoomFrame = -1
 mod.ReverseMoon.Data.DelayFrames = 1
-
-function mod.ReverseMoon.IsRedRoom(index)
-    for _, roomIndex in pairs(mod.ReverseMoon.Data.Rooms) do
-        if roomIndex == index then
-            return false 
-        end
-    end
-    
-    return true
-end
 
 function mod.ReverseMoon:OnUpdate()
     if mod.ReverseMoon.Data.EnterSecretRoomFrame == -1 then
@@ -232,88 +224,33 @@ function mod.ReverseMoon:OnUpdate()
     
     -- print ("Entering a normal (super) secret room")
     
-    local doorGridSlots = {7, 60, 74, 127}
+    local doorGridSlots = qol.Utils.DoorSlotsIn1x1()
     local openDoors = {}
     local allDoors = {}
-    local room = mod.Utils.GetCurrentRoom()
     
     for _, slot in pairs(doorGridSlots) do
-        local entity = room:GetGridEntity(slot)
+        local entity = qol.GridEntity(slot)
         if entity and entity:GetType() == GridEntityType.GRID_DOOR then
-            if entity:ToDoor():IsOpen() then
-                table.insert(openDoors, entity:ToDoor())
+            local door = entity:ToDoor()
+        
+            if (door:IsOpen() or door:IsLocked()) and not mod.Utils.IsRedRoom(door.TargetRoomIndex) then
+                table.insert(openDoors, door)
             end
             
-            table.insert(allDoors, entity:ToDoor())
+            table.insert(allDoors, door)
         end
     end
     
-    -- print ("There are " .. tostring(#openDoors) .. " open doors in this room")
-    if #openDoors == 1 then
-        local exitDoor = openDoors[1]
-        local targetRoomIndex = exitDoor.TargetRoomIndex
-        
-        -- Does the door lead to a non red room?
-        if not mod.ReverseMoon.IsRedRoom(targetRoomIndex) then 
-            -- print ("There is only a single opened dooor in this room, but it leads to a normal room")
-            return
-        --[[ else
-            -- Does the red room lead to a normal that is not a) A Curse Room, b) A Secret Room, c) A Super Secret Room ?
-            -- If yes, do not open another exit. If no, open another exit.
-            local otherPossibleRoomsIdx = {}
-            if targetRoomIndex > 13 then 
-                table.insert(otherPossibleRoomsIdx, targetRoomIndex - 13)
-            end
-            
-            if targetRoomIndex < 13 * 12 then
-                table.insert(otherPossibleRoomsIdx, targetRoomIndex + 13)
-            end
-                
-            if targetRoomIndex % 13 ~= 1 then
-                table.insert(otherPossibleRoomsIdx, targetRoomIndex - 1)
-            end
-                
-            if targetRoomIndex % 13 ~= 0 then
-                table.insert(otherPossibleRoomsIdx, targetRoomIndex + 1)
-            end
-                
-            local otherPossibleRooms = {}
-            for _, idx in pairs(otherPossibleRoomsIdx) do
-                if idx ~= mod.Utils.GetCurrentRoomIndex() then
-                    local otherRoom = Game():GetLevel():GetRoomByIdx(idx)
-                    if otherRoom and not mod.ReverseMoon.IsRedRoom(idx) then
-                        print ("OtherRoom has index " .. tostring(idx))
-                        if otherRoom.Data.Type ~= RoomType.ROOM_CURSE and 
-                           otherRoom.Data.Type ~= RoomType.ROOM_SECRET and
-                           otherRoom.Data.Type ~= RoomType.ROOM_SUPERSECRET and 
-                           otherRoom.Data.Type ~= RoomType.ROOM_ULTRASECRET then
-                            table.insert(otherPossibleRooms, idx)
-                        end
-                    end
-                end
-            end
-            
-            if #otherPossibleRooms ~= 0 then
-                return
-            end
-        end --]]
-        end
-        
-        -- No.
-        local hash = GetPtrHash(openDoors[1])
+    if #openDoors == 0 then
         local firstCandidate = nil
         local secondCandidate = nil
         
         for _, door in pairs(allDoors) do
-            if GetPtrHash(door) ~= hash then
-                if not mod.ReverseMoon.IsRedRoom(door.TargetRoomIndex) then
-                    if not firstCandidate then
-                        -- print ("First candidate door found")
-                        firstCandidate = door
-                    else
-                        -- print ("Second candidate door found")
-                        secondCandidate = door
-                    end
+            if not mod.Utils.IsRedRoom(door.TargetRoomIndex) then
+                if not firstCandidate then
+                    firstCandidate = door
+                else
+                    secondCandidate = door
                 end
             end
         end
@@ -325,28 +262,26 @@ function mod.ReverseMoon:OnUpdate()
         
         -- Avoid opening the way to the curse room if possible, as some low life characters may 
         -- die or be severely impaired when exiting the curse room.
-        if Game():GetLevel():GetRoomByIdx(firstCandidate.TargetRoomIndex).Data.Type == RoomType.ROOM_CURSE then
+        if qol.Level():GetRoomByIdx(firstCandidate.TargetRoomIndex).Data.Type == RoomType.ROOM_CURSE then
             if secondCandidate then
-                -- print ("Blowing open door at index " .. tostring(secondCandidate:GetGridIndex()))
-                secondCandidate:TryBlowOpen(true, Game():GetPlayer(1))
+                secondCandidate:SetLocked(false)
             else
                 -- Spawn a Fool card.
                 Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TAROTCARD, Card.CARD_FOOL, Vector(320, 280), Vector(0, 0), nil)
             end
         else
-            firstCandidate:TryBlowOpen(true, Game():GetPlayer(1))
+            firstCandidate:SetLocked(false)
         end
     end
 end
 
 function mod.ReverseMoon:OnEnterNewRoom()
-    if mod.ReverseMoon.Data.Rooms == {} then
+    if mod.Utils.Data.WhiteRooms == {} then
         return
     end
     
-    -- Do not do anything in a RED (Super) Secret Room
-    if mod.ReverseMoon.IsRedRoom(mod.Utils.GetCurrentRoomIndex()) then
-        -- print ("Entering a red room, do not do anything")
+    -- Do not do anything in a red room
+    if mod.Utils.IsRedRoom(mod.Utils.GetCurrentRoomIndex()) then
         return
     end
     
@@ -355,43 +290,147 @@ function mod.ReverseMoon:OnEnterNewRoom()
     end
 end
 
-function mod.ReverseMoon:OnNewLevel()
-    if Game():IsGreedMode() then
-        return
-    end
-
-    local rooms = Game():GetLevel():GetRooms()
-    
-    local data = {}
-    data.Rooms = {}
-    
-    for i = 0, #rooms - 1 do
-        local room = rooms:Get(i)
-        -- print ("Room " .. room.GridIndex .. " is a normal room")
-        table.insert(data.Rooms, room.GridIndex)
-    end
-    
-    mod:SaveData(json.encode(data))
-    
-    mod.ReverseMoon.Data.Rooms = data.Rooms
-end
-
-function mod.ReverseMoon:OnContinue(continued)
-    if not continued then
-        return
-    end
-    
-    if mod:HasData() then
-        local data = json.decode(mod:LoadData())
-        mod.ReverseMoon.Data.Rooms = data.Rooms
-        
-        --[[ for _, idx in pairs(mod.ReverseMoon.Data.Rooms) do
-            print ("Room " .. idx .. " is a normal room")
-        end --]] 
-    end
-end
-
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseMoon.OnEnterNewRoom)
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.ReverseMoon.OnNewLevel)
-mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.ReverseMoon.OnContinue)
 mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseMoon.OnUpdate)
+
+-- Fix the Ultra Secret Room sometimes not opening doors (when there are enemies 
+-- inside for example).
+
+mod.UltraSecret = {}
+mod.UltraSecret.Data = {}
+mod.UltraSecret.Data.EnterFrame = -1
+mod.UltraSecret.Data.FrameDiff = 1
+mod.UltraSecret.Data.PillColor = PillColor.PILL_BLUE_BLUE
+mod.UltraSecret.Data.TelepillsFromUltraSecret = false
+mod.UltraSecret.Data.DoorIdx = -1
+mod.UltraSecret.Data.DoorSlot = nil
+
+function mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
+    print ("[QOL] I need to finish this function, but I secretly hope that I don't have to")
+end
+
+function mod.UltraSecret:OnNewRoom()
+    if not mod.Utils.IsRoom(RoomType.ROOM_ULTRASECRET) then
+        if not mod.Utils.IsRoom(RoomType.ROOM_ERROR) then
+            return
+        else
+            if not mod.UltraSecret.Data.TelepillsFromUltraSecret then
+                return
+            else
+                mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
+                return
+            end
+        end
+    end
+    
+    mod.UltraSecret.Data.EnterFrame = Game():GetFrameCount()
+end
+
+function mod.UltraSecret:Update()
+    if mod.UltraSecret.Data.EnterFrame == -1 then
+        return
+    end
+    
+    if Game():GetFrameCount() - mod.UltraSecret.Data.EnterFrame < mod.UltraSecret.Data.FrameDiff then
+        return
+    end
+    
+    if not mod.Utils.IsRoom(RoomType.ROOM_ULTRASECRET) then
+        return
+    end
+    
+    local slots = qol.Utils.DoorSlotsIn1x1()
+    local nDoors = 0
+    local nOpenedDoors = 0
+    
+    for _, idx in pairs(slots) do
+        local entity = qol.GridEntity(idx)
+        if entity:GetType() == GridEntityType.GRID_DOOR then
+            nDoors = nDoors + 1
+            
+            if entity:ToDoor():IsOpen() then
+                nOpenedDoors = nOpenedDoors + 1
+            end
+        end
+    end
+    
+    if nDoors ~= 0 then
+        if nOpenedDoors ~= 0 then
+            return
+        else
+            print ("[QOL] I'm not sure what to do. Apparently there is a door somewhere, but it isn't opened, and I don't understand how it is possible. Here's something to get out if needed.")
+            mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
+        end
+    else
+       
+        mod.UltraSecret.OpenDoorToNormalRooms()
+    end
+end
+
+-- There are no really defined ways to connect the ultra secret room to the 
+-- normal rooms. The wiki explains that sometimes there will be two adjacent
+-- red rooms, sometimes there will be only one, and sometimes the player will 
+-- need to traverse at least two red rooms to go back. Ideally, we could use a 
+-- shortest path algorithm, but why would the API allow smart things?
+-- Fuck you Nicalis.
+function mod.UltraSecret.OpenDoorToNormalRooms()
+    -- Spawn a beam of light that will take the player back
+    local room = mod.Utils.GetCurrentRoom()
+    
+    if mod.UltraSecret.Data.DoorIdx == -1 then
+        local gridIdx = -1
+        local slots = {DoorSlot.UP0, DoorSlot.LEFT0, DoorSlot.DOWN0, DoorSlot.RIGHT0}
+        local validSlot = nil
+        for _, slot in pairs(slots) do
+            if room:IsDoorSlotAllowed(slot) then
+                validSlot = slot
+                break
+            end
+        end
+        
+        if not validSlot then
+            print ("I fucking hate this game... Here's a Fool card / Telepills, sorry if this makes you lose something...")
+            mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
+            return
+        end
+        
+        local gridIdx = -1
+        if validSlot == DoorSlot.UP0 then
+            gridIdx = 7
+        elseif validSlot == DoorSlot.LEFT0 then
+            gridIdx = 60
+        elseif validSlot == DoorSlot.DOWN0 then
+            gridIdx = 127
+        else
+            gridIdx = 74
+        end
+        
+        mod.UltraSecret.Data.DoorIdx = gridIdx
+        mod.UltraSecret.Data.DoorSlot = validSlot
+    end
+    
+    local entity = room:GetEntity(mod.UltraSecret.Data.DoorIdx)
+    local sprite = entity:GetSprite()
+    
+    sprite:Load("gfx/grid/Door_08_HoleInWall.anm2", true)
+    local slot = mod.UltraSecret.Data.DoorSlot
+    
+    local offset = nil
+    if slot == DoorSlot.UP0 then
+        offset = Vector(0, 13)
+    elseif slot == DoorSlot.LEFT0 then
+        
+    elseif slot == DoorSlot.DOWN0 then
+        
+    else
+        
+    end
+    
+    if room:GetAliveEnemiesCount() > 0 then
+        sprite:Play("Close", true)
+    else
+        sprite:Play("Opened", true)
+    end
+end
+
+-- mod:AddCallback(ModCallbacks.MC_
