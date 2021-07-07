@@ -64,3 +64,8 @@ the "Cursed" challenge.
 - [ ] Attempt to fix as many bugs as possible on Delirium, or even rewrite the entire
 fight (long term)
 - [ ] Attempt to change the way The Void generates (long term)
+- [ ] When (Tainted) Lost uses XIV - Temperance or XX - Judgement, give him a few
+frames of complete invulnerability to the spawned machine / devil beggar to avoid 
+instant death.
+- [ ] When XVIII - The Moon? doesn't open any door at all in the Ultra Secret 
+Room, give a way out to the player.
