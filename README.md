@@ -16,6 +16,12 @@ forcibly opens a door out of the (Super) Secret Room.
 
 # Mechanics 
 
+# Version history
+
+* 2021-07-07: entering a (super) secret room from a red room will open a door 
+out of the room that leads to a non red room. If there are enemies in the 
+(super) secret room, the newly opened door will automatically close. 
+
 # Planned work
 
 - [ ] When playing as Tainted Jacob, getting hit by Dark Esau gives the player a 
