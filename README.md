@@ -1,7 +1,11 @@
 # The Binding of Isaac Repentance - Quality of Life
 
-This mod aims to bring some quality of life fixes to The Binding of Isaac Repentance.
-Such fixes include bugs, balancing of mechanics and so on.
+This mod aims to bring some quality of life fixes to The Binding of Isaac Repentance,
+both on the modders and on the players ends.
+
+Players fixes include bugs, balancing of mechanics and so on.
+Modders quality of life changes include a logging API, helper functions around some of
+the weird things in the modding API, and so on.
 
 # Bug fixes
 
@@ -21,6 +25,7 @@ forcibly opens a door out of the (Super) Secret Room.
 * 2021-07-07: entering a (super) secret room from a red room will open a door 
 out of the room that leads to a non red room. If there are enemies in the 
 (super) secret room, the newly opened door will automatically close. 
+* 2021-09-25: added logging API.
 
 # Planned work
 
