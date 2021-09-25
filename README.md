@@ -16,6 +16,12 @@ forcibly opens a door out of the (Super) Secret Room.
 
 # Mechanics 
 
+# Version history
+
+* 2021-07-07: entering a (super) secret room from a red room will open a door 
+out of the room that leads to a non red room. If there are enemies in the 
+(super) secret room, the newly opened door will automatically close. 
+
 # Planned work
 
 - [ ] When playing as Tainted Jacob, getting hit by Dark Esau gives the player a 
@@ -58,3 +64,8 @@ the "Cursed" challenge.
 - [ ] Attempt to fix as many bugs as possible on Delirium, or even rewrite the entire
 fight (long term)
 - [ ] Attempt to change the way The Void generates (long term)
+- [ ] When (Tainted) Lost uses XIV - Temperance or XX - Judgement, give him a few
+frames of complete invulnerability to the spawned machine / devil beggar to avoid 
+instant death.
+- [ ] When XVIII - The Moon? doesn't open any door at all in the Ultra Secret 
+Room, give a way out to the player.
