@@ -9,7 +9,7 @@ the weird things in the modding API, and so on.
 
 # Bug fixes
 
-As of now (2021-07-03) there are two bug fixes:
+As of now (2021-09-25) there are the following bug fixes:
 * IV - The Emperor? Softlock. When used on Caves / Catacombs / Flooded Caves / 
 Mines / Ashpit II, IV - The Emperor? teleports the player to a Mom fight that
 has no exit door. This mod spawns an exit door each time the player goes to 
@@ -17,6 +17,10 @@ this room.
 * XVIII - The Moon? Softlock. Sometimes, the path leading back from the Ultra
 Secret Room will lead the player to a locked (Super) Secret Room. This mod 
 forcibly opens a door out of the (Super) Secret Room.
+* Exiting the Genesis room through the beam of light no longer prevents the 
+player from reaching the Cathedral. Additionnaly, using Glowing Hourglass at
+the beginning of the Cathedral and returning to Womb II doesn't prevent the 
+player from reaching Sheol if they want.
 
 # Mechanics 
 
