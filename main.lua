@@ -1,6 +1,6 @@
 if _G["qol"] then
     reloading = true
-    print ("Reloading Quality of Life")
+    qol.print ("Reloading Quality of Life")
 end
 
 local mod = RegisterMod("Quality of Life", 1)
@@ -13,10 +13,10 @@ end
 _G["qol"] = mod
 
 if mod._debug then
-    print = function(...)
+    qol.print = function(...)
         local vals = {...}
         local s = ""
-        for k, v in ipairs(vals) do
+        for k, v in pairs(vals) do
             s = s .. tostring(v)
             if k ~= #vals then
                 s = s .. "\t"
@@ -26,16 +26,16 @@ if mod._debug then
         Isaac.ConsoleOutput(s .. "\n")
     end
     
-    include = function(s)
-        s = "mods\\Quality of Life\\" .. string.gsub(s, ".lua", "")
+    qol.include = function(s)
+        s = string.gsub(s, ".lua", "")
         Isaac.DebugString("include2: " .. s)
         local result, extra = pcall(function () require(s) end)
         if result then
             Isaac.DebugString("Module correctly loaded, this is problematic: " .. s)
         elseif not result then
             if not string.match(extra, "%[DEBUG%] Intentional error") then
-                print(extra)
-                print("[ERROR] Error while loading " .. s .. ": " .. extra)
+                qol.print(extra)
+                qol.print("[ERROR] Error while loading " .. s .. ": " .. extra)
             end
         end
     end
@@ -43,14 +43,17 @@ if mod._debug then
     mod._error = function()
         error("[DEBUG] Intentional error because Lua and Nicalis and everything")
     end
+else
+    qol.print = print
+    qol.include = include
 end
 
 local json = require ("json")
 
-include ("qol_api.lua")
-include ("qol_config.lua")
-include ("qol_logging.lua")
-include ("qol_utilities.lua")
+qol.include ("qol_api.lua")
+qol.include ("qol_config.lua")
+qol.include ("qol_logging.lua")
+qol.include ("qol_utilities.lua")
 
 qol._logging:Init()
 
@@ -143,10 +146,10 @@ function mod.ReverseEmperor:SpawnExitDoorForExtraMomFight(entity)
     -- MC_POST_NEW_ROOM
     if not entity then
         if qol.RoomDesc().Clear then
-            -- print ("Entering the extra boss room (cleared)")
+            -- qol.print ("Entering the extra boss room (cleared)")
             mod.ReverseEmperor.SpawnExitDoorForExtraMomFightFn(false)
         else
-            -- print ("Entering the extra boss room (not cleared)")
+            -- qol.print ("Entering the extra boss room (not cleared)")
         end
     -- MC_POST_NPC_DEATH
     else
@@ -154,9 +157,11 @@ function mod.ReverseEmperor:SpawnExitDoorForExtraMomFight(entity)
     end
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, mod.ReverseEmperor.SpawnExitDoorForExtraMomFight, EntityType.ENTITY_MOM)
-mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseEmperor.SpawnExitDoorForExtraMomFight)
-mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmperor.ForceExitDoorForExtraMomFight)
+if qol.Config.ReverseEmperor then
+    mod:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, mod.ReverseEmperor.SpawnExitDoorForExtraMomFight, EntityType.ENTITY_MOM)
+    mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseEmperor.SpawnExitDoorForExtraMomFight)
+    mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmperor.ForceExitDoorForExtraMomFight)
+end
 
 end
 
@@ -177,7 +182,7 @@ function mod.TestDoor:SpawnTestDoor(command, args)
     end
     
     if mod.TestDoor.Data.DoorSpawned then
-        print("Door already spawned!")
+        qol.print("Door already spawned!")
         return
     end
     
@@ -185,20 +190,20 @@ function mod.TestDoor:SpawnTestDoor(command, args)
     local entity = room:GetGridEntity(mod.TestDoor.Data.DoorGridSlot)
     
     if entity then
-        print("Cannot spawn door, entity already present on grid slot " .. tostring(mod.TestDoor.Data.DoorGridSlot))
+        qol.print("Cannot spawn door, entity already present on grid slot " .. tostring(mod.TestDoor.Data.DoorGridSlot))
         return
     end
     
     local bossRoomIdx = mod.Utils.FindBossRoomIndex()
     if not bossRoomIdx then
-        print("Unable to find the index of the boss room")
+        qol.print("Unable to find the index of the boss room")
         return
     end
     
     local spawnResult = room:SpawnGridEntity(mod.TestDoor.Data.DoorGridSlot, GridEntityType.GRID_DOOR, DoorVariant.DOOR_UNLOCKED, 0, 0)
     
     if not spawnResult then
-        print("Error while spawning door")
+        qol.print("Error while spawning door")
         return
     end
     
@@ -228,13 +233,13 @@ function mod.TestDoor:UpdateTestDoor()
     
     local entity = Game():GetLevel():GetCurrentRoom():GetGridEntity(mod.TestDoor.Data.DoorGridSlot)
     if not entity then
-        print ("[ERROR] Door is spawned but I cannot get a pointer to it?")
+        qol.print ("[ERROR] Door is spawned but I cannot get a pointer to it?")
         return
     end
     
     local door = entity:ToDoor()
     if not door then
-        print ("[ERROR] Cannot cast entity to door")
+        qol.print ("[ERROR] Cannot cast entity to door")
         return
     end
     
@@ -243,7 +248,7 @@ function mod.TestDoor:UpdateTestDoor()
     end
     
     door:Update()
-    print ("Updating door")
+    qol.print ("Updating door")
 end
 
 -- mod:AddCallback(ModCallbacks.MC_EXECUTE_CMD, mod.TestDoor.SpawnTestDoor)
@@ -277,7 +282,7 @@ function mod.ReverseMoon:OnUpdate()
     
     mod.ReverseMoon.Data.EnterSecretRoomFrame = -1
     
-    -- print ("Entering a normal (super) secret room")
+    -- qol.print ("Entering a normal (super) secret room")
     
     local doorGridSlots = qol.Utils.DoorSlotsIn1x1()
     local openDoors = {}
@@ -311,7 +316,7 @@ function mod.ReverseMoon:OnUpdate()
         end
         
         if not firstCandidate then
-            print ("Unfortunately, there is no way out...")
+            qol.print ("Unfortunately, there is no way out...")
             return
         end
         
@@ -345,8 +350,10 @@ function mod.ReverseMoon:OnEnterNewRoom()
     end
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseMoon.OnEnterNewRoom)
-mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseMoon.OnUpdate)
+if qol.Config.ReverseMoonSecrets then
+    mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseMoon.OnEnterNewRoom)
+    mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseMoon.OnUpdate)
+end
 
 end
 
@@ -365,7 +372,7 @@ mod.UltraSecret.Data.DoorIdx = -1
 mod.UltraSecret.Data.DoorSlot = nil
 
 function mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
-    print ("[QOL] I need to finish this function, but I secretly hope that I don't have to")
+    qol.print ("[QOL] I need to finish this function, but I secretly hope that I don't have to")
 end
 
 function mod.UltraSecret:OnNewRoom()
@@ -417,7 +424,7 @@ function mod.UltraSecret:Update()
         if nOpenedDoors ~= 0 then
             return
         else
-            print ("[QOL] I'm not sure what to do. Apparently there is a door somewhere, but it isn't opened, and I don't understand how it is possible. Here's something to get out if needed.")
+            qol.print ("[QOL] I'm not sure what to do. Apparently there is a door somewhere, but it isn't opened, and I don't understand how it is possible. Here's something to get out if needed.")
             mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
         end
     else
@@ -448,7 +455,7 @@ function mod.UltraSecret.OpenDoorToNormalRooms()
         end
         
         if not validSlot then
-            print ("I fucking hate this game... Here's a Fool card / Telepills, sorry if this makes you lose something...")
+            qol.print ("I fucking hate this game... Here's a Fool card / Telepills, sorry if this makes you lose something...")
             mod.UltraSecret.SpawnFoolOrTelepillsAndConsiderErrorRoom()
             return
         end
@@ -502,7 +509,7 @@ mod.Delirium = {}
 
 function mod.Delirium.GetDelirium()
     local entities = qol.Utils.GetCurrentRoom():GetEntities()
-    for i = 1, #entities do
+    for i = 0, #entities - 1 do
         local entity = entities:Get(i)
         if entity then 
             local npc = entity:ToNPC()
@@ -539,7 +546,7 @@ function mod.Delirium:PostRender()
         marked.Color = Color(1, 0.1, 0.1)
         marked:SetFrame("Idle", 0)
         marked:Render(Isaac.WorldToScreen(delirium.Position))
-        -- print ("Rendering target at " .. delirium.Position.X .. ", " .. delirium.Position.Y)
+        -- qol.print ("Rendering target at " .. delirium.Position.X .. ", " .. delirium.Position.Y)
     end
 end
 
@@ -554,15 +561,17 @@ function mod.Delirium:UpdateSpeed()
         return
     end
     
-    print (delirium.Velocity)
+    qol.print (delirium.Velocity)
     if delirium.Velocity ~= mod.Delirium.NewVelocity then
         -- delirium.Velocity = delirium.Velocity * Vector(mod.Delirium.SpeedMultX, mod.Delirium.SpeedMultY)
         mod.Delirium.NewVelocity = delirium.Velocity
     end
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.Delirium.PostRender)
-mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Delirium.UpdateSpeed)
+if qol.Config.WIP then
+    mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.Delirium.PostRender)
+    mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Delirium.UpdateSpeed)
+end
 
 end
 
@@ -575,7 +584,6 @@ do
 qol.Genesis = {}
 
 function qol.Genesis:OnNewFloor()
-    print ("qol.Genesis.OnNewFloor")
     local stage = qol.Level():GetStage()
     if stage ~= LevelStage.STAGE5 then
         if stage ~= LevelStage.STAGE6 then
@@ -588,6 +596,8 @@ function qol.Genesis:OnNewFloor()
     end
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.Genesis.OnNewFloor)
+if qol.Config.GenesisSheol then
+    mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.Genesis.OnNewFloor)
+end
 
 end

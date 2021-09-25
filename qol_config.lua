@@ -4,23 +4,26 @@ end
 
 qol.Config = {}
 
--- Global enabler for the quality of life fixes on Tainted Jacob
-qol.Config.TJacob = true
+-- (Internal, debug only) Name of the directory that holds the mod
+qol.Config.ModPath = "Quality of Life"
 
--- Makes Dark Esau invulnerable as long as the boss of the floor has not been defeated.
--- In Greed Mode, Dark Esau will remain invulnerable as long as the Nightmare Wave has
--- not been completed.
--- If Tainted Jacob becomes The Lost, Dark Esau will become vulnerable whether 
--- the boss / nightmare wave has been defeated.
-qol.Config.DarkEsauInvulnerable = qol.Config.TJacob and true
+-- Loggers file (more useful for modders).
+-- This is the path to the file that contains the definition of loggers for
+-- the logging API.
+qol.Config.LoggersFile = "logs.json"
 
--- Add a Book of Shadows shield effect on Tainted Jacob when he gets it by Dark
--- Esau.
-qol.Config.TaintedJacobBOS = qol.Config.TJacob and true
+-- Enable Reverse Emperor Mom's softlock patch.
+qol.Config.ReverseEmperor = true
 
--- Configure the duration of the Book of Shadows shield effect on Tainted Jacob. 
--- Has no effect if the configuration disables the shielding. Value is in seconds.
-qol.Config.TaintedJacobBOSDuration = 2
+-- Enable Reverse Moon (Super) Secret Room softlock patch.
+qol.Config.ReverseMoonSecrets = true
+
+-- Enable Genesis not allowing you to go to Sheol patch.
+qol.Config.GenesisSheol = true
+
+-- Enable WIP stuff that may or may not crash your game at random because I'm 
+-- working on too much stuff at the same time.
+qol.Config.WIP = true
 
 if qol._debug then
     qol._error()

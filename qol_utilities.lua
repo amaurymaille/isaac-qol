@@ -139,7 +139,7 @@ function qol.Utils:LoadWhiteRooms(continued)
         qol.Utils.Data.WhiteRooms = data.Rooms
         
         --[[ for _, idx in pairs(qol.ReverseMoon.Data.Rooms) do
-            print ("Room " .. idx .. " is a normal room")
+            qol.print ("Room " .. idx .. " is a normal room")
         end --]] 
     end
 end
@@ -168,16 +168,16 @@ local function DumpTableDepth(tbl, depth)
         s = (s .. tostring(k) .. " => ")
         if type(v) == "table" then
             s = s .. "{"
-            print(s)
+            qol.print(s)
             DumpTableDepth(v, depth + 1)
             local epilogue = ""
             for i = 1, depth do
                 epilogue = epilogue .. "\t"
             end
             epilogue = epilogue .. "}"
-            print(epilogue)
+            qol.print(epilogue)
         else
-            print (s .. tostring(v))
+            qol.print(s .. tostring(v))
         end
     end
 end
@@ -187,9 +187,9 @@ function qol.Utils.DumpTable(tbl)
         return
     end
     
-    print("{")
+    qol.print("{")
     DumpTableDepth(tbl, 1)
-    print("}")
+    qol.print("}")
 end
 
 function qol.Utils.Enum(tbl)

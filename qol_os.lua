@@ -1,3 +1,7 @@
+if not qol then
+    error("You cannot use qol_os.lua without loading the Quality of Life mod first")
+end
+
 local os
 local result = pcall(function() os = require ("os") end)
 
