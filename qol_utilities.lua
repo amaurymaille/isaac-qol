@@ -200,6 +200,12 @@ function qol.Utils.Enum(tbl)
     return tbl
 end
 
+function qol.Utils.ForEach(list, fn)
+    for i = 0, #list - 1 do 
+        fn(list:Get(i))
+    end
+end
+
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.ForgetMeNow)
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.GlowingHourGlass)
 qol:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, qol.Utils.SaveWhiteRooms)
