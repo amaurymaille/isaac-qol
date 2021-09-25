@@ -77,39 +77,49 @@ function qol.Utils:SaveWhiteRooms()
     
     for i = 0, #rooms - 1 do
         local room = rooms:Get(i)
-        -- print ("Room " .. room.GridIndex .. " is a normal room")
-        -- Hey, did you know that the game doesn't have multiple indices for a
-        -- non 1x1 room, but instead uses the top-left corner as the grid index
-        -- for all the rooms?
-        -- Yes, even for L shaped rooms that don't have a top left corner.
-        -- I hate this API.
+        -- Rooms have indices from top left to bottom right.
+        -- The topleft room has grid index 0, the bottomright room has grind index 168.
+        -- Rooms that span multiple grid slots have a single index when iterated over 
+        -- through Level::GetRooms, which corresponds to the topleft corner of the
+        -- room. This also includes L shaped rooms that don't have a topleft slot
+        -- for some reason.
         
         local shape = room.Data.Shape
+        -- Always add the the identifier of the room being iterated over unless 
+        -- it is an L Shaped room without a topleft slot.
         if shape ~= RoomShape.ROOMSHAPE_LTL then
             table.insert(data.Rooms, room.GridIndex)
+        else
+            -- Process this corner case right now so it doesn't appear in the checks for
+            -- every single other shape.
+            assert(room.GridIndex % 13 ~= 12) -- Allow rooms to the right
+            assert(room.GridIndex < 13 * 12) -- Allow rooms below
+            table.insert(data.Rooms, room.GridIndex + 1) -- Right
+            table.insert(data.Rooms, room.GridIndex + 13) -- Below
+            table.insert(data.Rooms, room.GridIndex + 14) -- Below and right
         end
         
         -- There is "another" room below
         if shape == RoomShape.ROOMSHAPE_1x2 or shape == RoomShape.ROOMSHAPE_IIV or
-           shape == RoomShape.ROOMSHAPE_2x2 or shape == RoomShape.ROOMSHAPE_LTL or 
-           shape == RoomShape.ROOMSHAPE_LTR or shape == RoomShape.ROOMSHAPE_LBR then
-            assert(room.GridIndex <= 13 * 12)
+           shape == RoomShape.ROOMSHAPE_2x2 or shape == RoomShape.ROOMSHAPE_LTR or 
+           shape == RoomShape.ROOMSHAPE_LBR then
+            assert(room.GridIndex < 13 * 12)
             table.insert(data.Rooms, room.GridIndex + 13)
         end
         
         -- There is "another" room to the right
         if shape == RoomShape.ROOMSHAPE_2x1 or shape == RoomShape.ROOMSHAPE_IIH or 
-           shape == RoomShape.ROOMSHAPE_2x2 or shape == RoomShape.ROOMSHAPE_LTL or 
-           shape == RoomShape.ROOMSHAPE_LBL or shape == RoomShape.ROOMSHAPE_LBR then
-            assert(room.GridIndex % 13 ~= 0)
+           shape == RoomShape.ROOMSHAPE_2x2 or shape == RoomShape.ROOMSHAPE_LBL or 
+           shape == RoomShape.ROOMSHAPE_LBR then
+            assert(room.GridIndex % 13 ~= 12)
             table.insert(data.Rooms, room.GridIndex + 1)
         end
         
         -- There is "another" room to the right below
-        if shape == RoomShape.ROOMSHAPE_2x2 or shape == RoomShape.ROOMSHAPE_LTL or
-           shape == RoomShape.ROOMSHAPE_LTR or shape == RoomShape.ROOMSHAPE_LBL then
-            assert(room.GridIndex % 13 ~= 0)
-            assert(room.GridIndex <= 13 * 12)
+        if shape == RoomShape.ROOMSHAPE_2x2 or shape == RoomShape.ROOMSHAPE_LTR or 
+           shape == RoomShape.ROOMSHAPE_LBL then
+            assert(room.GridIndex % 13 ~= 12)
+            assert(room.GridIndex < 13 * 12)
             table.insert(data.Rooms, room.GridIndex + 14)
         end
     end
