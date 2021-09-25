@@ -56,6 +56,8 @@ qol._logging:Init()
 
 -- Fix IV - The Emperor? not spawning a door after defeating bonus Mom
 
+do
+
 mod.ReverseEmperor = {}
 mod.ReverseEmperor.Data = {}
 mod.ReverseEmperor.Data.DoorGridSlot = 7
@@ -156,7 +158,11 @@ mod:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, mod.ReverseEmperor.SpawnExitDoor
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseEmperor.SpawnExitDoorForExtraMomFight)
 mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmperor.ForceExitDoorForExtraMomFight)
 
+end
+
 -- Test updating a door spawned by force
+
+do
 
 mod.TestDoor = {}
 mod.TestDoor.Data = {}
@@ -243,7 +249,11 @@ end
 -- mod:AddCallback(ModCallbacks.MC_EXECUTE_CMD, mod.TestDoor.SpawnTestDoor)
 -- mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.TestDoor.UpdateTestDoor)
 
+end
+
 -- Fix XVIII - The Moon? sometimes softlocking the player
+
+do
 
 mod.ReverseMoon = {}
 mod.ReverseMoon.Data = {}
@@ -338,8 +348,12 @@ end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.ReverseMoon.OnEnterNewRoom)
 mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseMoon.OnUpdate)
 
+end
+
 -- Fix the Ultra Secret Room sometimes not opening doors (when there are enemies 
 -- inside for example).
+
+do
 
 mod.UltraSecret = {}
 mod.UltraSecret.Data = {}
@@ -478,4 +492,102 @@ function mod.UltraSecret.OpenDoorToNormalRooms()
     end
 end
 
--- mod:AddCallback(ModCallbacks.MC_
+end
+
+-- Delirium
+
+do
+
+mod.Delirium = {}
+
+function mod.Delirium.GetDelirium()
+    local entities = qol.Utils.GetCurrentRoom():GetEntities()
+    for i = 1, #entities do
+        local entity = entities:Get(i)
+        if entity then 
+            local npc = entity:ToNPC()
+        
+            if npc and npc.Type == EntityType.ENTITY_DELIRIUM then
+                return npc
+            end
+        end
+    end
+    
+    return nil
+end
+
+mod.Delirium.Marked = nil
+mod.Delirium.SpeedMultX = 1
+mod.Delirium.SpeedMultY = 1
+mod.Delirium.NewVelocity = Vector(1, 1)
+
+function mod.Delirium:PostRender()
+    local delirium = mod.Delirium.GetDelirium()
+    if not delirium then
+        return
+    end
+    
+    if not mod.Delirium.Marked then
+        mod.Delirium.Marked = Sprite()
+        mod.Delirium.Marked:Load("gfx/1000.030_dr. fetus target.anm2", true)
+    end
+    
+    local marked = mod.Delirium.Marked
+    
+    if marked:IsLoaded() then
+        marked.Rotation = 0
+        marked.Color = Color(1, 0.1, 0.1)
+        marked:SetFrame("Idle", 0)
+        marked:Render(Isaac.WorldToScreen(delirium.Position))
+        -- print ("Rendering target at " .. delirium.Position.X .. ", " .. delirium.Position.Y)
+    end
+end
+
+function mod.Delirium.SetSpeedMultiplier(x, y)
+    mod.Delirium.SpeedMultX = x
+    mod.Delirium.SpeedMultY = y
+end
+
+function mod.Delirium:UpdateSpeed()
+    local delirium = mod.Delirium.GetDelirium()
+    if not delirium then
+        return
+    end
+    
+    print (delirium.Velocity)
+    if delirium.Velocity ~= mod.Delirium.NewVelocity then
+        -- delirium.Velocity = delirium.Velocity * Vector(mod.Delirium.SpeedMultX, mod.Delirium.SpeedMultY)
+        mod.Delirium.NewVelocity = delirium.Velocity
+    end
+end
+
+mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.Delirium.PostRender)
+mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Delirium.UpdateSpeed)
+
+end
+
+
+-- Genesis preventing the player from reaching Sheol if they left the room
+-- through the beam of light.
+
+do
+
+qol.Genesis = {}
+
+function qol.Genesis:OnNewFloor()
+    print ("qol.Genesis.OnNewFloor")
+    local stage = qol.Level():GetStage()
+    if stage ~= LevelStage.STAGE5 then
+        if stage ~= LevelStage.STAGE6 then
+            Game():SetStateFlag(GameStateFlag.STATE_HEAVEN_PATH, false)
+        else
+            if qol.Level():GetStageType() ~= StageType.STAGETYPE_WOTL then
+                Game():SetStateFlag(GameStateFlag.STATE_HEAVEN_PATH, false)
+            end
+        end
+    end
+end
+
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.Genesis.OnNewFloor)
+
+end
