@@ -4,9 +4,6 @@ end
 
 qol.Config = {}
 
--- (Internal, debug only) Name of the directory that holds the mod
-qol.Config.ModPath = "Quality of Life"
-
 -- Loggers file (more useful for modders).
 -- This is the path to the file that contains the definition of loggers for
 -- the logging API.
