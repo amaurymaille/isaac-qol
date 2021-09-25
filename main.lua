@@ -1,13 +1,58 @@
+if _G["qol"] then
+    reloading = true
+    print ("Reloading Quality of Life")
+end
+
 local mod = RegisterMod("Quality of Life", 1)
-assert (not _G["qol"], "qol is already defined")
+mod._debug = pcall(function() require("debug") end)
+
+if mod._debug then
+    Isaac.DebugString("Debug mode")
+end
 
 _G["qol"] = mod
+
+if mod._debug then
+    print = function(...)
+        local vals = {...}
+        local s = ""
+        for k, v in ipairs(vals) do
+            s = s .. tostring(v)
+            if k ~= #vals then
+                s = s .. "\t"
+            end
+        end
+        
+        Isaac.ConsoleOutput(s .. "\n")
+    end
+    
+    include = function(s)
+        s = "mods\\Quality of Life\\" .. string.gsub(s, ".lua", "")
+        Isaac.DebugString("include2: " .. s)
+        local result, extra = pcall(function () require(s) end)
+        if result then
+            Isaac.DebugString("Module correctly loaded, this is problematic: " .. s)
+        elseif not result then
+            if not string.match(extra, "%[DEBUG%] Intentional error") then
+                print(extra)
+                print("[ERROR] Error while loading " .. s .. ": " .. extra)
+            end
+        end
+    end
+    
+    mod._error = function()
+        error("[DEBUG] Intentional error because Lua and Nicalis and everything")
+    end
+end
 
 local json = require ("json")
 
 include ("qol_api.lua")
 include ("qol_config.lua")
+include ("qol_logging.lua")
 include ("qol_utilities.lua")
+
+qol._logging:Init()
 
 -- Fix IV - The Emperor? not spawning a door after defeating bonus Mom
 

@@ -21,3 +21,7 @@ qol.Config.TaintedJacobBOS = qol.Config.TJacob and true
 -- Configure the duration of the Book of Shadows shield effect on Tainted Jacob. 
 -- Has no effect if the configuration disables the shielding. Value is in seconds.
 qol.Config.TaintedJacobBOSDuration = 2
+
+if qol._debug then
+    qol._error()
+end

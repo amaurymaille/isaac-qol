@@ -148,7 +148,53 @@ function qol.Utils.IsRedRoom(index)
     return true
 end
 
+local function DumpTableDepth(tbl, depth)
+    for k, v in pairs(tbl) do
+        local s = ""
+        for i = 1, depth do
+            s = s .. "\t"
+        end
+        
+        s = (s .. tostring(k) .. " => ")
+        if type(v) == "table" then
+            s = s .. "{"
+            print(s)
+            DumpTableDepth(v, depth + 1)
+            local epilogue = ""
+            for i = 1, depth do
+                epilogue = epilogue .. "\t"
+            end
+            epilogue = epilogue .. "}"
+            print(epilogue)
+        else
+            print (s .. tostring(v))
+        end
+    end
+end
+
+function qol.Utils.DumpTable(tbl)
+    if type(tbl) ~= "table" then
+        return
+    end
+    
+    print("{")
+    DumpTableDepth(tbl, 1)
+    print("}")
+end
+
+function qol.Utils.Enum(tbl)
+    for i = 1, #tbl do
+        tbl[tbl[i]] = i
+    end
+    
+    return tbl
+end
+
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.ForgetMeNow)
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.GlowingHourGlass)
 qol:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, qol.Utils.SaveWhiteRooms)
 qol:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, qol.Utils.LoadWhiteRooms)
+
+if qol._debug then
+    qol._error()
+end
