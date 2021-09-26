@@ -501,13 +501,54 @@ end
 
 end
 
--- Delirium
+-- Delirium misc fixes
 
 do
 
 mod.Delirium = {}
 
+local deliriumLogger = qol._logging:GetLogger("delirium")
+
+mod.Delirium.Marked = nil
+mod.Delirium.SpeedMultX = 1
+mod.Delirium.SpeedMultY = 1
+mod.Delirium.NewVelocity = Vector(1, 1)
+
+-- Frames at which Delirium / Mom entered the MC_NPC_POST_INIT callback. 
+-- Give the player some immunity to immediate contact damage.
+mod.Delirium.DeliriumMorphFrame = -1
+mod.Delirium.MomSpawnFrame = -1
+
+mod.Delirium.BigHornStates = {
+    NULL,
+    POP_UP,
+    POP_DOWN
+}
+
+mod.Delirium.BigHornState = mod.Delirium.BigHornStates.NULL
+
+-- Delirium current boss form
+mod.Delirium.MorphedAs = -1
+mod.Delirium.MorphedAsVariant = -1
+
+mod.Delirium.Harbringers = {
+    HARBRINGER_VARIANT_NORMAL = 0,
+    DEATH_VARIANT_HORSE = 20
+}
+
+mod.Delirium.DeliriumMaxHitPoints = 10000
+
+local function isDeliriumRoom()
+    return qol.Room():GetType() == RoomType.ROOM_BOSS and 
+        qol.Room():GetRoomShape() == RoomShape.ROOMSHAPE_2x2 and
+        qol.Level():GetStage() == LevelStage.STAGE7
+end
+
 function mod.Delirium.GetDelirium()
+    if not isDeliriumRoom() then
+        return nil
+    end
+    
     local entities = qol.Utils.GetCurrentRoom():GetEntities()
     for i = 0, #entities - 1 do
         local entity = entities:Get(i)
@@ -523,30 +564,117 @@ function mod.Delirium.GetDelirium()
     return nil
 end
 
-mod.Delirium.Marked = nil
-mod.Delirium.SpeedMultX = 1
-mod.Delirium.SpeedMultY = 1
-mod.Delirium.NewVelocity = Vector(1, 1)
+local function isHarbringerID(id, variant)
+    return (id == EntityType.ENTITY_FAMINE or
+        id == EntityType.ENTITY_PESTILENCE or
+        id == EntityType.ENTITY_WAR or
+        id == EntityType.ENTITY_DEATH) and variant == mod.Delirium.Harbringers.HARBRINGER_VARIANT_NORMAL
+end
+
+local function isDeathHorseID(id, variant)
+    return id == EntityType.ENTITY_DEATH and 
+        variant == mod.Delirium.Harbringers.DEATH_VARIANT_HORSE
+end
+
+local function isHarbringer(entity)
+    return isHarbringerID(entity.Type, entity.Variant)
+end
+
+local function isSinID(id)
+    return id == EntityType.ENTITY_SLOTH or
+        id == EntityType.ENTITY_LUST or
+        id == EntityType.ENTITY_WRATH or 
+        id == EntityType.ENTITY_GLUTTONY or
+        id == EntityType.ENTITY_GREED or
+        id == EntityType.ENTITY_ENVY or 
+        id == EntityType.ENTITY_PRIDE
+end
+
+local function isSin(entity)
+    return isSinID(entity.Type)
+end
+
+local function isAngelID(id)
+    return id == EntityType.ENTITY_URIEL or
+        id == EntityType.ENTITY_GABRIEL
+end
+
+local function isAngel(entity)
+    return isAngelID(entity.Type)
+end
+
+local function isMegaSatanSummonID(id, variant)
+    return isHarbringerID(id, variant) or
+        isSinID(id) or
+        isAngelID(id)
+end
+
+local function isMegaSatanSummon(entity)
+    return (isHarbringer(entity) or isSin(entity) or isAngel(entity)) and 
+        entity.MaxHitPoints ~= mod.Delirium.DeliriumMaxHitPoints
+end
 
 function mod.Delirium:PostRender()
+    if not isDeliriumRoom() then
+        return
+    end
+
     local delirium = mod.Delirium.GetDelirium()
     if not delirium then
         return
     end
     
+    if mod.Delirium.MorphedAs ~= EntityType.ENTITY_BIG_HORN then
+        mod.Delirium.BigHornState = mod.Delirium.BigHornStates.NULL
+    end
+    
     if not mod.Delirium.Marked then
         mod.Delirium.Marked = Sprite()
         mod.Delirium.Marked:Load("gfx/1000.030_dr. fetus target.anm2", true)
+        local marked = mod.Delirium.Marked
+        marked.Rotation = 0
+        marked.Color = Color(1, 1, 1)
+        local frameNum = 0
+        local split = Game():GetFrameCount() % 10
+        if split < 5 then
+            frameNum = 0
+        else
+            frameNum = 1
+        end
+        marked:SetFrame("Blink", frameNum)
     end
     
     local marked = mod.Delirium.Marked
     
     if marked:IsLoaded() then
-        marked.Rotation = 0
-        marked.Color = Color(1, 0.1, 0.1)
-        marked:SetFrame("Idle", 0)
+        local frameNum = 0
+        local split = Game():GetFrameCount() % 10
+        if split < 5 then
+            frameNum = 0
+        else
+            frameNum = 1
+        end
+        marked:SetFrame("Blink", frameNum)
         marked:Render(Isaac.WorldToScreen(delirium.Position))
-        -- qol.print ("Rendering target at " .. delirium.Position.X .. ", " .. delirium.Position.Y)
+    end
+    
+    -- Stop all Mega Satan animations in order to prevent it from spawning tears,
+    -- because destroying the harbringers / sins / angels makes MS cycle his phases
+    -- properly.
+    -- if string.find(delirium:GetSprite():GetFilename(), "274%.000") then
+    if mod.Delirium.MorphedAs == EntityType.ENTITY_MEGA_SATAN then
+        delirium:GetSprite():SetFrame("Idle", 0)
+    elseif mod.Delirium.MorphedAs == EntityType.ENTITY_BIG_HORN then
+        local sprite = delirium:GetSprite()
+        local animation = sprite:GetAnimation()
+        
+        if animation == "PopUp" or animation == "Appear" then
+            -- deliriumLogger:info("Big Horn UP")
+            mod.Delirium.BigHornState = mod.Delirium.BigHornStates.UP
+        elseif animation == "PopDown" then
+            -- deliriumLogger:info("Big Horn DOWN")
+            mod.Delirium.BigHornState = mod.Delirium.BigHornStates.DOWN
+        end
     end
 end
 
@@ -555,22 +683,159 @@ function mod.Delirium.SetSpeedMultiplier(x, y)
     mod.Delirium.SpeedMultY = y
 end
 
-function mod.Delirium:UpdateSpeed()
+function mod.Delirium:NpcUpdate(npc)
+    if not isDeliriumRoom() then
+        return
+    end
+    
+    -- Remove Mega Satan's summons. This is normally not necessary because stopping its
+    -- animations should prevent him from summoning anyway, but considering that most 
+    -- animations are sped up later... Let's be sure.
+    if isMegaSatanSummon(npc) then
+        deliriumLogger:info("Deleting Mega Satan summon " .. tostring(npc.Type) .. " (variant: " .. tostring(npc.Variant) .. ") with " .. tostring(npc.MaxHitPoints) .. " health")
+        npc:Remove()
+    -- Remove Death's Horse that spawns when Delirium transforms into Death with
+    -- less than 50% HP.
+    elseif npc.Type == EntityType.ENTITY_DEATH and npc.Variant == mod.Delirium.Harbringers.DEATH_VARIANT_HORSE and npc.MaxHitPoints ~= mod.Delirium.DeliriumMaxHitPoints then
+        deliriumLogger:info("Deleting Death's horse")
+        npc:Remove()
+    end
+
     local delirium = mod.Delirium.GetDelirium()
     if not delirium then
         return
     end
     
-    qol.print (delirium.Velocity)
+    -- delirium.Visible = true
     if delirium.Velocity ~= mod.Delirium.NewVelocity then
         -- delirium.Velocity = delirium.Velocity * Vector(mod.Delirium.SpeedMultX, mod.Delirium.SpeedMultY)
         mod.Delirium.NewVelocity = delirium.Velocity
     end
 end
 
-if qol.Config.WIP then
+local function checkDeliriumGraceTime() 
+    return Game():GetFrameCount() - mod.Delirium.DeliriumMorphFrame <= qol.Config.DeliriumGraceTime
+end
+
+local function checkMomGraceTime()
+    return Game():GetFrameCount() - mod.Delirium.MomSpawnFrame <= qol.Config.DeliriumMomGraceTime
+end
+
+local function newProjectileNeedsTreatement()
+    local morphedAs = mod.Delirium.MorphedAs
+    local delirium = mod.Delirium.GetDelirium()
+    
+    return morphedAs == EntityType.ENTITY_MOM or 
+        morphedAs == EntityType.ENTITY_MEGA_SATAN or
+        (morphedAs == EntityType.ENTITY_BIG_HORN and mod.Delirium.BigHornState == mod.Delirium.BigHornStates.DOWN)
+end
+
+function mod.Delirium:OnProjectileInit(projectile)
+    if not isDeliriumRoom() or not newProjectileNeedsTreatement() then
+        return
+    end
+    
+    local data = projectile:GetData()
+    data["needsTreatement"] = true
+    data["spawn"] = Game():GetFrameCount()
+end
+
+function mod.Delirium:PostNPCInit(npc)
+    if not isDeliriumRoom() then
+        return
+    end
+    
+    if npc:IsBoss() then
+        deliriumLogger:info("A boss spawned: " .. tostring (npc.Type))
+        mod.Delirium.MorphedAs = npc.Type
+        mod.Delirium.DeliriumMorphFrame = Game():GetFrameCount()
+    end
+
+    -- deliriumLogger:info("Initializing entity " .. tostring(npc.Type))
+    if npc.Type == EntityType.ENTITY_MOM then
+        mod.Delirium.MomSpawnFrame = Game():GetFrameCount()
+    elseif npc.Type == EntityType.ENTITY_MEGA_SATAN then
+        mod.Delirium.MegaSatanSpawnFrame = Game():GetFrameCount()
+    end
+end
+
+function mod.Delirium:EntityTakeDmg(victim, amount, flags, src, invFrames)
+    local player = victim:ToPlayer()
+    if not player then
+        return true
+    end
+    
+    src = src.Entity
+    
+    if not src then
+        deliriumLogger:info("Player took damage from unknown entity")
+        return true
+    end
+    
+    local sourceType = ""
+    local sourceExtra = ""
+    
+    if src:ToProjectile() then
+        local data = src:GetData()
+        if data["needsTreatement"] then
+            if Game():GetFrameCount() - data["spawn"] <= qol.Config.DeliriumGraceTime then
+                deliriumLogger:info("Negating damage from projectile")
+                return false
+            end
+        end
+        
+        sourceType = "projectile"
+        sourceExtra = ""
+    elseif src:ToNPC() then
+        if src.Type == EntityType.ENTITY_DELIRIUM then
+            if checkDeliriumGraceTime() then
+                deliriumLogger:info("Negating damage from Delirium")
+                return false
+            end
+            
+            deliriumLogger:info("Delirium spawned at " .. tostring(mod.Delirium.DeliriumSpawnFrame) .. ", time is " .. tostring(Game():GetFrameCount()))
+        end
+        sourceType = "NPC"
+        sourceExtra = tostring(src.Type)
+    end
+    
+    deliriumLogger:info("Player took damage from " .. sourceType .. " (extra info: " .. sourceExtra .. ")")
+    return true
+end
+
+-- Called every logic time to have the correct ID in mod.Delirium.MorphedAs.
+-- It is impossible to guess in a call to the NPC_INIT callback if Delirium transformed
+-- into one of Mega Satan summons or if Delirium as Mega Satan spawned one of Mega 
+-- Satan summons. Therefore, if Delirium is transformed into one of Mega Satan summons, 
+-- check if Delirium is using the animations of Mega Satan to deduce if he is still 
+-- transformed as Mega Satan or if he is transformed into one of Mega Satan summons.
+function mod.Delirium:StabilizeMorphGuess()
+    if not isDeliriumRoom() then
+        return
+    end
+    
+    local delirium = mod.Delirium.GetDelirium()
+    if not delirium then
+        return
+    end
+    
+    if isMegaSatanSummonID(mod.Delirium.MorphedAs, mod.Delirium.MorphedAsVariant) or 
+        isDeathHorseID(mod.Delirium.MorphedAs, mod.Delirium.MorphedAsVariant) then
+        local filename = delirium:GetSprite():GetFilename()
+        if string.find(filename, "274.00%d_megasatan") then
+            mod.Delirium.MorphedAs = EntityType.ENTITY_MEGA_SATAN
+            mod.Delirium.MorphedAsVariant = 0
+        end
+    end
+end
+
+if qol.Config.Delirium then
+    mod:AddCallback(ModCallbacks.MC_POST_NPC_INIT, mod.Delirium.PostNPCInit)
     mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.Delirium.PostRender)
-    mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Delirium.UpdateSpeed)
+    mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, mod.Delirium.NpcUpdate)
+    mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, mod.Delirium.EntityTakeDmg)
+    mod:AddCallback(ModCallbacks.MC_POST_PROJECTILE_INIT, mod.Delirium.OnProjectileInit)
+    mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.Delirium.StabilizeMorphGuess)
 end
 
 end

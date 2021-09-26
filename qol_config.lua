@@ -22,6 +22,18 @@ qol.Config.GenesisSheol = true
 -- working on too much stuff at the same time.
 qol.Config.WIP = true
 
+-- Enable Delirium fixes (in progress, there is a lot to fix)
+qol.Config.Delirium
+
+-- Amount of time in LOGIC frames (30 LOGIC frames / second) during which the 
+-- player is immune to contact damage with Delirium (whatever form it has taken) 
+-- and to the bullets he spawns. The grace window starts on the immediate frame 
+-- during which Delirium teleported / morphed / spawned a tear while transformed as 
+-- certain bosses.
+-- 
+-- Current bosses: Mom's Foot, Big Horn (only if underground), Mega Satan (head and hands)
+qol.Config.DeliriumGraceTime = 30
+
 if qol._debug then
     qol._error()
 end
