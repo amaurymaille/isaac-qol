@@ -23,7 +23,7 @@ qol.Config.GenesisSheol = true
 qol.Config.WIP = true
 
 -- Enable Delirium fixes (in progress, there is a lot to fix)
-qol.Config.Delirium
+qol.Config.Delirium = true
 
 -- Amount of time in LOGIC frames (30 LOGIC frames / second) during which the 
 -- player is immune to contact damage with Delirium (whatever form it has taken) 
