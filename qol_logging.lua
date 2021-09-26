@@ -283,7 +283,7 @@ local function process_loggers_section(tbl, loggers)
                         level = level,
                         content = content
                     }
-                    handler.socket:send(json.encode(data))
+                    handler.socket:send(json.encode(data) .. "\n")
                 elseif handler.type == "file" then
                     handler.file:write(content .. "\n")
                 end
@@ -408,7 +408,11 @@ end
 for _, log_level in ipairs{ "debug", "info", "warn", "error", "critical" } do
     logging[log_level] = function(self, logger, ...)
         if not self._loggers[logger] then
-            return
+            local result = {}
+            for _, name in ipairs{ "log", "debug", "info", "warn", "error", "critical" } do
+                result[name] = function(self, ...) end
+            end
+            return result
         end
         
         self._loggers[logger]:log(qol.LogLevels[string.upper(log_level)], ...)
@@ -416,7 +420,15 @@ for _, log_level in ipairs{ "debug", "info", "warn", "error", "critical" } do
 end
 
 function logging:GetLogger(name)
-    return self._loggers[name]
+    if not self._loggers[name] then
+        local result = {}
+        for _, name in ipairs{ "log", "debug", "info", "warn", "error", "critical" } do
+            result[name] = function(self, ...) end
+        end
+        return result
+    else
+        return self._loggers[name]
+    end
 end
 
 qol._logging = logging
