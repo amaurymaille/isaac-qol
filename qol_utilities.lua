@@ -206,6 +206,14 @@ function qol.Utils.ForEach(list, fn)
     end
 end
 
+function qol.Utils.ForEachEntity(fn)
+    if qol.Room then
+        qol.Utils.ForEach(qol.Room():GetEntities(), fn)
+    else
+        qol.Utils.ForEach(Game():GetRoom():GetEntities(), fn)
+    end
+end
+
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.ForgetMeNow)
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.GlowingHourGlass)
 qol:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, qol.Utils.SaveWhiteRooms)
