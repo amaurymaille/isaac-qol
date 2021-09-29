@@ -917,4 +917,18 @@ if qol.Config.ReverseEmpress then
     mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmpress.OnUpdate)
 end
 
+-- R Key not resetting the Mausoleum Mom's Heart beaten flag.
+
+do
+
+qol.RKeyMausoleumHeart = {}
+
+function qol.RKeyMausoleumHeart:PreUseItem(collectible, rng, player, flags, slot, varData)
+    Game():SetStateFlag(GameStateFlag.STATE_MAUSOLEUM_HEART_KILLED, false)
+end
+
+if qol.Config.RKeyMausoleumHeart then
+    mod:AddCallback(ModCallbacks.MC_PRE_USE_ITEM, mod.RKeyMausoleumHeart.PreUseItem, CollectibleType.COLLECTIBLE_R_KEY)
+end
+
 end

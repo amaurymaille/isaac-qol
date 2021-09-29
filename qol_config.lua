@@ -38,6 +38,10 @@ qol.Config.ReverseEmpress = true
 -- Current bosses: Mom's Foot, Big Horn (only if underground), Mega Satan (head and hands)
 qol.Config.DeliriumGraceTime = 30
 
+-- Enable R Key to reset the flag indicating Mom's Heart has been defeated in
+-- the Mausoleum, allowing for runs to continue to The Beast.
+qol.Config.RKeyMausoleumHeart = true
+
 if qol._debug then
     qol._error()
 end
