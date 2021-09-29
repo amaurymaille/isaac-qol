@@ -25,6 +25,10 @@ qol.Config.WIP = true
 -- Enable Delirium fixes (in progress, there is a lot to fix)
 qol.Config.Delirium = true
 
+-- Enable Reverse Empress fix for characters that cannot have red health 
+-- (includes Keeper)
+qol.Config.ReverseEmpress = true
+
 -- Amount of time in LOGIC frames (30 LOGIC frames / second) during which the 
 -- player is immune to contact damage with Delirium (whatever form it has taken) 
 -- and to the bullets he spawns. The grace window starts on the immediate frame 

@@ -866,3 +866,55 @@ if qol.Config.GenesisSheol then
 end
 
 end
+
+-- III - The Empress? removing too many heart containers
+
+do
+
+qol.ReverseEmpress = {}
+qol.ReverseEmpress.Data = {}
+
+function qol.ReverseEmpress.HasBug(player)
+    local playerType = player.SubType
+    
+    return playerType == PlayerType.PLAYER_XXX or 
+        playerType == PlayerType.PLAYER_BLACKJUDAS or
+        playerType == PlayerType.PLAYER_KEEPER or
+        playerType == PlayerType.PLAYER_JUDAS_B or 
+        playerType == PlayerType.PLAYER_XXX_B or
+        playerType == PlayerType.PLAYER_BETHANY_B
+end
+
+function qol.ReverseEmpress:OnCardUse(card, player, flags)
+    if qol.ReverseEmpress.HasBug(player) then
+        local id = qol.Utils.GetPlayerID(player) 
+        qol.print ("Player " .. tostring(id) .. " (" .. tostring(player.SubType) .. ") has bug")
+        qol.ReverseEmpress.Data[id] = {
+            as = player.SubType, -- In case of character change
+            timer = Game():GetFrameCount(),
+            hearts = player:GetMaxHearts() + player:GetSoulHearts()
+        }
+    end
+end
+
+function qol.ReverseEmpress:OnUpdate()
+    for id, data in pairs(qol.ReverseEmpress.Data) do
+        local player = Game():GetPlayer(id)
+        local diffTime = Game():GetFrameCount() - 60 * qol.LOGIC_FPS
+        
+        if diffTime == data.timer then
+            qol.print("Effect of Reverse Empress should have disappeared")
+            qol.print("Player has " .. tostring(player:GetMaxHearts() + player:GetSoulHearts()) .. " hearts")
+        elseif diffTime == data.timer - qol.LOGIC_FPS then
+            qol.print("Effect of Reverse Empress is about to disappear")
+            qol.print("Player has " .. tostring(player:GetMaxHearts() + player:GetSoulHearts()) .. " hearts")
+        end
+    end
+end
+
+if qol.Config.ReverseEmpress then
+    mod:AddCallback(ModCallbacks.MC_USE_CARD, mod.ReverseEmpress.OnCardUse, Card.CARD_REVERSE_EMPRESS)
+    mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmpress.OnUpdate)
+end
+
+end
