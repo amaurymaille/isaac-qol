@@ -4,6 +4,9 @@ if not _G["qol"] then
     error("You cannot include qol_api.lua without loading the Quality of Life mod first")
 end
 
+qol.LOGIC_FPS = 30
+qol.RENDER_FPS = 60
+
 function qol.Level()
     return Game():GetLevel()
 end

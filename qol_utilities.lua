@@ -214,6 +214,17 @@ function qol.Utils.ForEachEntity(fn)
     end
 end
 
+function qol.Utils.GetPlayerID(player)
+    local data = player:GetData()
+    if not data["ID"] then
+        for i = 0, Game():GetNumPlayers() - 1 do
+            Game():GetPlayer(i):GetData()["ID"] = i
+        end
+    end
+    
+    return data["ID"]
+end
+
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.ForgetMeNow)
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.GlowingHourGlass)
 qol:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, qol.Utils.SaveWhiteRooms)
