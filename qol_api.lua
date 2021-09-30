@@ -27,6 +27,10 @@ function qol.GridEntity(idx)
     return qol.Room():GetGridEntity(idx)
 end
 
+function qol.Entities()
+    return qol.Room():GetEntities()
+end
+
 if qol._debug then
     qol._error()
 end
