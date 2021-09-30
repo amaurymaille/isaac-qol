@@ -917,6 +917,8 @@ if qol.Config.ReverseEmpress then
     mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmpress.OnUpdate)
 end
 
+end
+
 -- R Key not resetting the Mausoleum Mom's Heart beaten flag.
 
 do
