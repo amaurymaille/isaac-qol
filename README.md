@@ -21,6 +21,14 @@ forcibly opens a door out of the (Super) Secret Room.
 player from reaching the Cathedral. Additionnaly, using Glowing Hourglass at
 the beginning of the Cathedral and returning to Womb II doesn't prevent the 
 player from reaching Sheol if they want.
+* Multiple fixes on Delirium, mainly avoiding glitched damage when Delirium 
+isn't visible on screen. Also, when Delirium transformes into Mega Satan, he
+will no longer summon harbringers, sins or angels, and no longer update the 
+Mega Satan AI.
+* Using the R Key after defeating Mom's Heart in Mausoleum II now always 
+reset the flag telling the game that the heart has been defeated. This cause
+the normal versions of Mauso II to load when going for The Beast or Mother 
+again after using the R Key.
 
 # Mechanics 
 
@@ -53,7 +61,7 @@ Downpour / Dross II
 of Downpour / Dross II
 	- [ ] Preventing the player from using 0 - The Fool? when all their red
 hearts are empty
-- [ ] Fix some of Delirium's unavoidable attacks, such as instant damage when it 
+- [*] Fix some of Delirium's unavoidable attacks, such as instant damage when it 
 morphs into Mom's Foot.
 - [ ] Add a visual indication around Tainted Eve's hearts to indicate how much health
 will get refilled when using Sumptorium.
