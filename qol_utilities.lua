@@ -201,13 +201,19 @@ function qol.Utils.Enum(tbl)
 end
 
 function qol.Utils.ForEach(list, fn)
-    for i = 0, #list - 1 do 
-        fn(list:Get(i))
+    if type(list) == "table" then
+        for k, v in pairs(list) do
+            fn(k, v)
+        end
+    else
+        for i = 0, #list - 1 do 
+            fn(list:Get(i))
+        end
     end
 end
 
 function qol.Utils.ForEachEntity(fn)
-    if qol.Room then
+    if qol.Room() then
         qol.Utils.ForEach(qol.Room():GetEntities(), fn)
     else
         qol.Utils.ForEach(Game():GetRoom():GetEntities(), fn)
@@ -224,6 +230,44 @@ function qol.Utils.GetPlayerID(player)
     
     return data["ID"]
 end
+
+function qol.Utils.Filter(list, fn)
+    local result = {}
+    
+    if type(list) == "table" then
+        for k, v in pairs(list) do
+            if fn(k, v) then
+                result[k] = v
+            end
+        end
+    else
+        for i = 0, #list - 1 do
+            if fn(list:Get(i)) then
+                table.insert(result, list:Get(i))
+            end
+        end    
+    end
+    
+    return result
+end
+
+function qol.Utils.Map(list, fn)
+    local result = {}
+    
+    if type(list) == "table" then
+        for k, v in pairs(list) do
+            result[k] = fn(k, v)
+        end
+    else 
+        for i = 0, #list - 1 do
+            table.insert(result, fn(list:Get(i)))
+        end
+    end
+    
+    return result
+end
+
+
 
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.ForgetMeNow)
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.GlowingHourGlass)
