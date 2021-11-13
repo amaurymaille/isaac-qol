@@ -674,10 +674,10 @@ function mod.Delirium:PostRender()
         
         if animation == "PopUp" or animation == "Appear" then
             -- deliriumLogger:info("Big Horn UP")
-            mod.Delirium.BigHornState = mod.Delirium.BigHornStates.UP
+            mod.Delirium.BigHornState = mod.Delirium.BigHornStates.POP_UP
         elseif animation == "PopDown" then
             -- deliriumLogger:info("Big Horn DOWN")
-            mod.Delirium.BigHornState = mod.Delirium.BigHornStates.DOWN
+            mod.Delirium.BigHornState = mod.Delirium.BigHornStates.POP_DOWN
         end
     end
 end
@@ -731,7 +731,7 @@ local function newProjectileNeedsTreatement()
     
     return morphedAs == EntityType.ENTITY_MOM or 
         morphedAs == EntityType.ENTITY_MEGA_SATAN or
-        (morphedAs == EntityType.ENTITY_BIG_HORN and mod.Delirium.BigHornState == mod.Delirium.BigHornStates.DOWN)
+        (morphedAs == EntityType.ENTITY_BIG_HORN and mod.Delirium.BigHornState == mod.Delirium.BigHornStates.POP_DOWN)
 end
 
 function mod.Delirium:OnProjectileInit(projectile)
