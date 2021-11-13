@@ -42,6 +42,8 @@ qol.Config.DeliriumGraceTime = 30
 -- the Mausoleum, allowing for runs to continue to The Beast.
 qol.Config.RKeyMausoleumHeart = true
 
+qol.Config.DarkEsauEternalChampions = true
+
 if qol._debug then
     qol._error()
 end

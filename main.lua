@@ -941,3 +941,48 @@ if qol.Config.RKeyMausoleumHeart then
 end
 
 end
+
+-- Dark Esau doesn't allow White Eternal Champions to be defeated
+-- Fix this by replacing each white champion that spawn with another 
+-- champion.
+
+do
+
+qol.DarkEsauEternalChampions = {}
+
+local function isPlayingTaintedJacob()
+    local nPlayers = Game():GetNumPlayers()
+    for i = 0, nPlayers - 1 do
+        local player = Game():GetPlayer(i)
+        if player:GetPlayerType() == PlayerType.PLAYER_JACOB2_B or player:GetPlayerType() == PlayerType.PLAYER_JACOB_B then
+            return true
+        end
+    end
+    
+    return false
+end
+
+function qol.DarkEsauEternalChampions:OnNPCUpdate(npc)
+    if not isPlayingTaintedJacob() then
+        return
+    end
+    
+    if npc:IsChampion() and npc:GetChampionColorIdx() == ChampionColor.WHITE then
+        -- qol.print("Trying to replace eternal champion")
+        local entity = nil
+        repeat
+            if entity ~= nil then
+                entity:Remove()
+            end
+            entity = Game():Spawn(npc.Type, npc.Variant, npc.Position, npc.Velocity, nil, npc.SubType, Game():GetRoom():GetSpawnSeed())
+        until not (entity:ToNPC():IsChampion() and entity:ToNPC():GetChampionColorIdx() == ChampionColor.WHITE)
+        
+        npc:Remove()
+    end
+end
+
+if qol.Config.DarkEsauEternalChampions then
+    qol:AddCallback(ModCallbacks.MC_NPC_UPDATE, qol.DarkEsauEternalChampions.OnNPCUpdate)
+end
+
+end
