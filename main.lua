@@ -901,11 +901,6 @@ function qol.ReverseEmpress:OnUpdate()
     for id, data in pairs(qol.ReverseEmpress.Data) do
         local player = Game():GetPlayer(id)
         local diffTime = Game():GetFrameCount() - 60 * qol.LOGIC_FPS
-        local hearts = player:GetMaxHearts() + player:GetSoulHearts()
-        
-        if hearts ~= qol.ReverseEmpress.Data[id].newHearts then
-            qol.print("Player " .. tostring(id) .. " had " .. tostring(qol.ReverseEmpress.Data[id].newHearts) .. " (" .. tostring(qol.ReverseEmpress.Data[id].timer) .. "), now they have " .. tostring(hearts) .. " (" .. tostring(Game():GetFrameCount()) .. ")")
-        end
         
         if diffTime == data.timer then
             qol.print("Effect of Reverse Empress should have disappeared")
@@ -913,23 +908,11 @@ function qol.ReverseEmpress:OnUpdate()
         elseif diffTime == data.timer - qol.LOGIC_FPS then
             qol.print("Effect of Reverse Empress is about to disappear")
             qol.print("Player has " .. tostring(player:GetMaxHearts() + player:GetSoulHearts()) .. " hearts")
-        elseif Game():GetFrameCount() == data.timer + 1 then
-            qol.ReverseEmpress.Data[id].newHearts = player:GetMaxHearts() + player:GetSoulHearts()
-            qol.print("1 frame after the effect, player has " ..tostring(qol.ReverseEmpress.Data[id].newHearts) .. ", previously had " .. tostring(qol.ReverseEmpress.Data[id].hearts))
-        end
-    end
-end
-
-function mod.ReverseEmpress:OnInput(entity, hook, action)
-    if action == ButtonAction.ACTION_PILLCARD then
-        if Input.IsActionTriggered(ButtonAction.ACTION_PILLCARD, 0) then
-            qol.print("[" .. tostring(Game():GetFrameCount()) .. "] Pressed pillcard button through hook " .. tostring(hook))
         end
     end
 end
 
 if qol.Config.ReverseEmpress then
-    mod:AddCallback(ModCallbacks.MC_INPUT_ACTION, mod.ReverseEmpress.OnInput)
     mod:AddCallback(ModCallbacks.MC_USE_CARD, mod.ReverseEmpress.OnCardUse, Card.CARD_REVERSE_EMPRESS)
     mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.ReverseEmpress.OnUpdate)
 end
