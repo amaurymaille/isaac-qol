@@ -969,7 +969,7 @@ function qol.DarkEsauEternalChampions:OnNPCUpdate(npc)
     
     if npc:IsChampion() and npc:GetChampionColorIdx() == ChampionColor.WHITE then
         -- qol.print("Trying to replace eternal champion")
-        local entity = nil
+        --[[ local entity = nil
         repeat
             if entity ~= nil then
                 entity:Remove()
@@ -977,7 +977,10 @@ function qol.DarkEsauEternalChampions:OnNPCUpdate(npc)
             entity = Game():Spawn(npc.Type, npc.Variant, npc.Position, npc.Velocity, nil, npc.SubType, Game():GetRoom():GetSpawnSeed())
         until not (entity:ToNPC():IsChampion() and entity:ToNPC():GetChampionColorIdx() == ChampionColor.WHITE)
         
-        npc:Remove()
+        npc:Remove() 
+        --]]
+        
+        qol.ReplaceChampion(npc, { ChampionColor.WHITE })
     end
 end
 

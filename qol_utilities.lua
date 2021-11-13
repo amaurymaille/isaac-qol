@@ -267,7 +267,19 @@ function qol.Utils.Map(list, fn)
     return result
 end
 
+function qol.Utils.In(list, search)
+    for _, value in pairs(list) do
+        if value == search then
+            return true
+        end
+    end
+    
+    return false
+end
 
+function qol.Utils.GetEnemiesByID(id)
+    return qol.Utils.Filter(Game():GetRoom():GetEntities(), function(entity) return entity:ToNPC() ~= nil and entity:ToNPC().Type == id end)
+end
 
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.ForgetMeNow)
 qol:AddCallback(ModCallbacks.MC_EXECUTE_CMD, qol.Utils.GlowingHourGlass)
