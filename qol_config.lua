@@ -10,10 +10,10 @@ qol.Config = {}
 qol.Config.LoggersFile = "logs.json"
 
 -- Enable Reverse Emperor Mom's softlock patch.
-qol.Config.ReverseEmperor = true
+-- qol.Config.ReverseEmperor = true
 
 -- Enable Reverse Moon (Super) Secret Room softlock patch.
-qol.Config.ReverseMoonSecrets = true
+-- qol.Config.ReverseMoonSecrets = true
 
 -- Enable Genesis not allowing you to go to Sheol patch.
 qol.Config.GenesisSheol = true
@@ -27,7 +27,7 @@ qol.Config.Delirium = true
 
 -- Enable Reverse Empress fix for characters that cannot have red health 
 -- (includes Keeper)
-qol.Config.ReverseEmpress = true
+-- qol.Config.ReverseEmpress = true
 
 -- Amount of time in LOGIC frames (30 LOGIC frames / second) during which the 
 -- player is immune to contact damage with Delirium (whatever form it has taken) 

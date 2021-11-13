@@ -59,6 +59,8 @@ qol._logging:Init()
 
 -- Fix IV - The Emperor? not spawning a door after defeating bonus Mom
 
+--[[
+
 do
 
 mod.ReverseEmperor = {}
@@ -501,6 +503,8 @@ end
 
 end
 
+--]]
+
 -- Delirium misc fixes
 
 do
@@ -867,6 +871,7 @@ end
 
 end
 
+--[[
 -- III - The Empress? removing too many heart containers
 
 do
@@ -918,6 +923,8 @@ if qol.Config.ReverseEmpress then
 end
 
 end
+
+--]]
 
 -- R Key not resetting the Mausoleum Mom's Heart beaten flag.
 
