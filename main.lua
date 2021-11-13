@@ -989,3 +989,33 @@ if qol.Config.DarkEsauEternalChampions then
 end
 
 end
+
+-- Prevent Needles from becoming some champions, for fairness
+
+qol.NeedleChampions = {}
+qol.NeedleChampions.Forbidden = {
+    ChampionColor.GREEN,
+    ChampionColor.FLICKER,
+    ChampionColor.PINK,
+    ChampionColor.PURPLE,
+    ChampionColor.PULSE_GREY,
+    ChampionColor.FLY_PROTECTED,
+    ChampionColor.PULSE_RED,
+    ChampionColor.BROWN,
+    ChampionColor.RAINBOW
+}
+
+local function isAllowedNeedleChampion(color)
+    return not qol.Utils.In(qol.NeedleChampions.Forbidden, color)
+end
+
+function qol.NeedleChampions:OnNPCUpdate(npc)
+    if npc:IsChampion() and not isAllowedNeedleChampion(npc:GetChampionColorIdx()) then
+        qol.print("Replacing champion needle with color " .. tostring(npc:GetChampionColorIdx()))
+        qol.ReplaceChampion(npc, qol.NeedleChampions.Forbidden)
+    end
+end
+
+if qol.Config.NeedleChampions then
+    mod:AddCallback(ModCallbacks.MC_NPC_UPDATE, qol.NeedleChampions.OnNPCUpdate, EntityType.ENTITY_NEEDLE)
+end

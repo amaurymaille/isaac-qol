@@ -44,6 +44,8 @@ qol.Config.RKeyMausoleumHeart = true
 
 qol.Config.DarkEsauEternalChampions = true
 
+qol.Config.NeedleChampions = true
+
 if qol._debug then
     qol._error()
 end
